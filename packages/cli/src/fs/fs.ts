@@ -6,6 +6,7 @@ import {formatFile} from '../utilities';
 export interface FileResult {
   path: string;
   overwritten: boolean;
+  diff: boolean;
 }
 
 export class Fs {
@@ -28,13 +29,17 @@ export class Fs {
       return this.files.get(fullPath)!;
     }
 
-    if (this.readCache.has(fullPath)) {
-      return this.readCache.get(fullPath)!;
+    const exists = await this.exists(path);
+
+    if (!exists) {
+      throw new Error(`Tried to operate on ${path}, but it does not exist.`);
     }
 
     const contents = await readFile(fullPath, 'utf8');
-    this.readCache.set(fullPath, contents);
 
+    if (!this.readCache.has(fullPath)) {
+      this.readCache.set(fullPath, contents);
+    }
     return contents;
   }
 
@@ -50,8 +55,12 @@ export class Fs {
         await mkdirp(dirname(path));
       }
 
-      await writeFile(path, formatFile(contents));
-      yield {path: this.relativePath(path), overwritten: exists};
+      const oldFile = this.readCache.get(path);
+      const formattedFile = formatFile(contents);
+      const diff = oldFile ? formatFile(oldFile) !== formattedFile : false;
+
+      await writeFile(path, formatFile(formattedFile));
+      yield {path: this.relativePath(path), overwritten: exists, diff: diff};
     }
   }
 

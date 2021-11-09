@@ -2,6 +2,7 @@
 import faker from 'faker';
 import {Metafield} from '../../graphql/types/types';
 import {ParsedMetafield, Rating, RawMetafield} from '../../types';
+import {getProduct} from './product';
 
 export type MetafieldType =
   | 'single_line_text_field'
@@ -46,7 +47,7 @@ export const METAFIELDS: MetafieldType[] = [
 
 export function getRawMetafield(
   metafield: Partial<Metafield> & {type?: MetafieldType} = {}
-): Omit<Metafield, 'parentResource' | 'valueType'> {
+): RawMetafield {
   const type: MetafieldType =
     metafield.type == null
       ? faker.random.arrayElement(METAFIELDS)
@@ -62,6 +63,9 @@ export function getRawMetafield(
     type,
     updatedAt: metafield.updatedAt ?? faker.date.recent(),
     value: metafield.value ?? getMetafieldValue(type),
+    reference: Object.keys(metafield).includes('reference')
+      ? metafield.reference
+      : (getProduct({metafields: {edges: []}, variants: {edges: []}}) as any),
   };
 }
 
@@ -167,6 +171,8 @@ export function getParsedMetafield(
     case 'single_line_text_field':
     case 'multi_line_text_field':
     case 'product_reference':
+      field.value = rawField.value;
+      break;
     case 'page_reference':
     case 'variant_reference':
     case 'file_reference':

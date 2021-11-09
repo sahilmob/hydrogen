@@ -6,12 +6,13 @@ import {StarRating} from './components/StarRating';
 import {RawHtml} from '../RawHtml';
 import {ParsedMetafield, Measurement, Rating} from '../../types';
 import {MetafieldFragment as Fragment} from '../../graphql/graphql-constants';
+import {ProductProvider, Product} from '../ProductProvider';
 
 export interface MetafieldProps {
   /** A [Metafield object](/api/storefront/reference/common-objects/metafield) from the Storefront API. */
   metafield: ParsedMetafield;
-  /** A render function that takes a `Metafield` object as an argument. Refer to [Render props](#render-props). */
-  children?: (value: ParsedMetafield) => ReactElement;
+  /** A React Element, or a render function that takes a `Metafield` object as an argument. Refer to [Render props](#render-props). */
+  children?: ReactElement | ((value: ParsedMetafield) => ReactElement);
 }
 
 /**
@@ -103,6 +104,19 @@ export function Metafield<TTag extends ElementType>(
           {JSON.stringify(metafield.value)}
         </Wrapper>
       );
+    case 'product_reference': {
+      if (metafield.reference != null) {
+        const product = metafield.reference as Product;
+        return (
+          <ProductProvider
+            product={product}
+            initialVariantId={product?.variants?.edges?.[0]?.node.id ?? ''}
+          >
+            {children}
+          </ProductProvider>
+        );
+      }
+    }
     default: {
       const Wrapper = as ?? 'span';
       return (

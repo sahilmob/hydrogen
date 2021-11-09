@@ -9,8 +9,6 @@ fragment MetafieldFragment on Metafield {
   namespace
   key
   value
-  createdAt
-  updatedAt
   description
 }
 ```

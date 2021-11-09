@@ -7,6 +7,7 @@ import {
   BUTTON_PRIMARY_CLASSES,
   BUTTON_SECONDARY_CLASSES,
 } from './Button.client';
+import ProductCard from './ProductCard';
 
 function ProductPriceMarkup() {
   return (
@@ -104,9 +105,57 @@ function SizeChart() {
   );
 }
 
+function RecommendedProducts() {
+  const {metafields} = useProduct();
+  const recommendedProducts = metafields.filter((metafield) =>
+    metafield.key.includes('recommended_product'),
+  );
+
+  if (recommendedProducts.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="p-10 col-span-3">
+      <h3 className="text-2xl font-bold text-center mb-6">
+        You might also like...
+      </h3>
+      <div className="grid grid-cols-3 gap-6">
+        <Product.Metafield
+          keyName="recommended_product_1"
+          namespace="my_fields"
+        >
+          {(metafield) => {
+            return <ProductCard product={metafield.reference} />;
+          }}
+        </Product.Metafield>
+        <Product.Metafield
+          keyName="recommended_product_2"
+          namespace="my_fields"
+        >
+          {/* eslint-disable-next-line @shopify/jsx-prefer-fragment-wrappers */}
+          <div>
+            <Product.Title />
+            <Product.SelectedVariant.Image />
+            <Product.SelectedVariant.Price priceType="compareAt" />
+            <Product.SelectedVariant.Price />
+          </div>
+        </Product.Metafield>
+        <Product.Metafield
+          keyName="recommended_product_3"
+          namespace="my_fields"
+        >
+          {(metafield) => {
+            return <ProductCard product={metafield.reference} />;
+          }}
+        </Product.Metafield>
+      </div>
+    </div>
+  );
+}
+
 export default function ProductDetails({product}) {
   const initialVariant = flattenConnection(product.variants)[0];
-
   return (
     <>
       <Seo product={product} />
@@ -230,6 +279,7 @@ export default function ProductDetails({product}) {
               }}
             </Product.Metafield>
           </div>
+          <RecommendedProducts />
         </div>
       </Product>
     </>

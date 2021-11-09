@@ -1,7 +1,7 @@
 import type {ServerResponse} from 'http';
 import type {ServerComponentResponse} from './framework/Hydration/ServerComponentResponse.server';
 import type {ServerComponentRequest} from './framework/Hydration/ServerComponentRequest.server';
-import type {Metafield} from './graphql/types/types';
+import type {Metafield, Product} from './graphql/types/types';
 
 export type Renderer = (
   url: URL,
@@ -71,8 +71,14 @@ export interface GraphQLConnection<T> {
   edges?: {node: T}[];
 }
 
-export type RawMetafield = Partial<Metafield>;
-export type ParsedMetafield = Omit<Partial<Metafield>, 'value'> & {
+export type RawMetafield = Omit<Partial<Metafield>, 'reference'> & {
+  reference?: Product;
+};
+
+export type ParsedMetafield = Omit<
+  Partial<Metafield>,
+  'value' | 'reference'
+> & {
   value?:
     | string
     | number
@@ -81,6 +87,7 @@ export type ParsedMetafield = Omit<Partial<Metafield>, 'value'> & {
     | Date
     | Rating
     | Measurement;
+  reference?: Partial<Product>;
 };
 
 export interface Rating {
